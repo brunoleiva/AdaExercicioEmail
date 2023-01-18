@@ -18,14 +18,16 @@ public class main {
                 dataHoraAtual, formatter.parse("05/01/2023 16:00:00"), "Assunto 2 email teste", "Leia esse emaillll "));
 
         caixa.caixaEntrada.put(3, new Email("ada@teste.com", "bruno.leiva@teste.com",
-                dataHoraAtual, formatter.parse("17/01/2023 16:00:00"), "Assunto 3 palavraChave email teste", "Leia esse emaillll aaaa "));
+                dataHoraAtual, formatter.parse("18/01/2023 16:00:00"), "Assunto 3 palavraChave email teste", "Leia esse emaillll aaaa "));
 
         //System.out.println(caixa.totalEmailsdeUmEndereço("ada@teste.com"));
 
        // System.out.println(caixa.filtroPalavraChaveEmails("palavraChave;email"));
 
-        caixa.apagarEmailsPorData("08/01/2023 16:00:00", "dd/MM/yyyy HH:mm:ss");
+        //caixa.apagarEmailsPorData("08/01/2023 16:00:00");
 
-        System.out.println(caixa.filtroPalavraChaveEndereços("teste"));
+        //System.out.println(caixa.filtroPalavraChaveEndereços("teste"));
+
+        System.out.println(caixa.emailsHoje().toString());
     }
 }

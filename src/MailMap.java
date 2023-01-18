@@ -76,8 +76,8 @@ public class MailMap {
         return endereços;
     }
 
-    public void apagarEmailsPorData(String data, String formatacao){
-        SimpleDateFormat formatter = new SimpleDateFormat(formatacao);
+    public void apagarEmailsPorData(String data){
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         try {
             Date dataApagar = formatter.parse(data);
             ArrayList<Email> emailsApagados = new ArrayList<Email>();
@@ -95,5 +95,18 @@ public class MailMap {
         }
     }
 
+    public List<Email> emailsHoje(){
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        Date data = new Date();
+        ArrayList<Email> emailsHoje = new ArrayList<Email>();
+
+        for (Email email: caixaEntrada.values()) {
+            Date dtRecebimento = email.getDataRecebimento();
+           if((data.getDay()+data.getMonth()+data.getYear()+"").equals((dtRecebimento.getDay()+dtRecebimento.getMonth()+dtRecebimento.getYear()+""))){
+               emailsHoje.add(email);
+           }
+        }
+        return emailsHoje;
+   }
 
 }
