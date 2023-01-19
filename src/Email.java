@@ -1,82 +1,58 @@
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Email {
     private String remetente;
-    private String destinatario;
-    private Date dataEnvio;
-    private Date dataRecebimento;
+    private LocalDate dataEnvio;
+    private LocalDate dateRecebimento;
     private String assunto;
     private String corpo;
 
-    public Email() {
-    }
-
-    public Email(String remetente, String destinatario, Date dataEnvio, Date dataRecebimento, String assunto, String corpo) {
+    public Email(String remetente, String assunto, String corpo) {
         this.remetente = remetente;
-        this.destinatario = destinatario;
-        this.dataEnvio = dataEnvio;
-        this.dataRecebimento = dataRecebimento;
+        this.dataEnvio = LocalDate.now();
+        this.dateRecebimento = LocalDate.now();
         this.assunto = assunto;
         this.corpo = corpo;
     }
+
 
     public String getRemetente() {
         return remetente;
     }
 
-    public void setRemetente(String remetente) {
-        this.remetente = remetente;
+    public String dataFormatada(LocalDate data) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return data.format(formatter);
+
     }
 
-    public String getDestinatario() {
-        return destinatario;
-    }
-
-    public void setDestinatario(String destinatario) {
-        this.destinatario = destinatario;
-    }
-
-    public Date getDataEnvio() {
+    public LocalDate getDataEnvio() {
         return dataEnvio;
     }
 
-    public void setDataEnvio(Date dataEnvio) {
-        this.dataEnvio = dataEnvio;
-    }
-
-    public Date getDataRecebimento() {
-        return dataRecebimento;
-    }
-
-    public void setDataRecebimento(Date dataRecebimento) {
-        this.dataRecebimento = dataRecebimento;
+    public LocalDate getDateRecebimento() {
+        return dateRecebimento;
     }
 
     public String getAssunto() {
         return assunto;
     }
 
-    public void setAssunto(String assunto) {
-        this.assunto = assunto;
-    }
-
-    public String getCorpo() {
+    public String getTexto() {
         return corpo;
-    }
-
-    public void setCorpo(String corpo) {
-        this.corpo = corpo;
     }
 
     @Override
     public String toString() {
-        return "Email{" +
-                "remetente='" + remetente + '\'' +
-                ", destinatario='" + destinatario + '\'' +
+        return "--------------------------------" + "\n" +
+                "Email{" + "\n" +
+                "remetente='" + remetente + "\n" +
                 ", dataEnvio=" + dataEnvio +
-                ", dataRecebimento=" + dataRecebimento +
-                ", assunto='" + assunto + '\'' +
-                ", corpo='" + corpo + '\'' +
-                '}' + "\n";
+                ", dateRecebimento=" + dateRecebimento +
+                ", assunto='" + assunto + "\n" +
+                ", texto='" + corpo + "\n" +
+                '}' + "\n" +
+                "-------------------------------";
     }
 }
