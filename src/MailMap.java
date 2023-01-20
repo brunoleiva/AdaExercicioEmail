@@ -1,190 +1,153 @@
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MailMap {
+    private final HashMap<String, List<Email>> mailBox = new HashMap<>();
+    private final List<String> DICIONARIO_DE_SPAM = List.of("GRÁTIS", "Atenção", "Oi", "Urgente", "Imediato");
 
-    HashMap<String, List<Email>> mailBox = new HashMap<>();
-
-
-
-    //total de endereços de emails que recebeu
+    // Total de endereços de emails que recebeu
     public int totalEnderecosEmails() {
-        Integer total = mailBox.size();
-        System.out.println("TOTAL DE EMAILS: " + total);
-        return total;
+        return mailBox.size();
     }
 
-    public void guardarEmail(Email email) {
-        if (email != null) {
-            if (mailBox.containsKey(email.getRemetente())) {
-                mailBox.get(email.getRemetente()).add(email);
-            } else {
-                List<Email> mailList = new ArrayList<>();
-                mailList.add(email);
-                mailBox.put(email.getRemetente(), mailList);
-            }
-            System.out.println("Salvando: " + email);
+    public void guardarEmail(Email email) throws IllegalArgumentException {
+        if (email == null) throw new IllegalArgumentException("E-mail não pode ser nulo");
+
+        if (mailBox.containsKey(email.getRemetente())) {
+            mailBox.get(email.getRemetente()).add(email);
         } else {
-            System.out.println("Erro ao salvar email");
-        }
-    }
-    public int contarEmailPorEndereco(String endereco) {
-        int total = 0;
-        if (validaEmail(endereco))
-            throw new IllegalArgumentException("Email inválido");
-
-        for (String key : mailBox.keySet()) {
-            if (Objects.equals(key, endereco)) {
-                total = mailBox.get(key).size();
-            }
+            List<Email> mailList = new ArrayList<>();
+            mailList.add(email);
+            mailBox.put(email.getRemetente(), mailList);
         }
 
-        return total;
+        System.out.println("Salvando: " + email);
     }
+
+    public Integer contarEmailPorEndereco(String endereco) throws IllegalArgumentException {
+        if (validaEmail(endereco)) throw new IllegalArgumentException("E-mail inválido");
+
+        if (mailBox.containsKey(endereco)) return mailBox.get(endereco).size();
+        else return 0;
+    }
+
     public List<String> listaEmailsPorParametro(List<String> palavras) {
         verificaCaixaVazia();
-        List<String> listaEmails = new ArrayList<>();
-        filtrarEmailsPorAssunto(palavras, listaEmails);
-        return listaEmails;
+
+        return filtrarEmailsPorAssunto(palavras);
     }
 
-    public Set<String> buscarEnderecosPorAssuntoSet(Set<String> palavras) {
+    public List<String> buscarEnderecosPorAssuntoSet(Set<String> palavras) {
         verificaCaixaVazia();
-        Set<String> remetente = new HashSet<>();
-        filtrarEmailsPorAssunto(palavras, remetente);
-        return remetente;
-    }
 
+        return filtrarEmailsPorAssunto(palavras);
+    }
 
     public void removeEmailsDataCorte(final LocalDate date) {
-        for (String key : mailBox.keySet()) {
-            removeEmailsDataCorte(date, key);
-        }
+        mailBox.keySet().removeIf(key -> removeEmailsDataCorte(date, key).isEmpty());
     }
 
     public void removeEmailsDataPorEndereco(final LocalDate date, String endereco) {
-        for (String key : mailBox.keySet()) {
-            removeEmailsDataCorteEndereco(date, endereco ,key);
-        }
+        mailBox.keySet().removeIf(key -> removeEmailsDataCorteEndereco(date, endereco, key).isEmpty());
     }
 
     public List<String> listaEmailPais(String pais) {
-        List<String> emailPais = new ArrayList<>();
         verificaCaixaVazia();
-        if (validaPais(pais)) {
-            for (String endereco : mailBox.keySet()) {
-                if (endereco.endsWith(pais)) {
-                    emailPais.add(endereco);
-                }
-            }
-        }
-        return emailPais;
-    }
+        validaPais(pais);
 
+        return mailBox.keySet().stream()
+                .filter(key -> key.endsWith(pais))
+                .collect(Collectors.toList());
+    }
 
     public List<String> BuscarEmailsDeHoje(LocalDate date) {
-        final List<String> sentMails = new ArrayList<>();
+        List<String> emails = new ArrayList<>();
+
         for (String key : mailBox.keySet()) {
-            for (Email mail : mailBox.get(key)) {
-                if (mail.getDataEnvio().equals(date)) {
-                    sentMails.add(key);
-                    break;
-                }
-            }
+            mailBox.get(key).stream()
+                    .filter(email -> email.getDataEnvio().equals(date))
+                    .forEach(email -> emails.add(email.getRemetente()));
         }
-        return sentMails;
+
+        return emails;
     }
 
-
-
-
     public List<String> emailsDePortugal() {
-        return listaEmailPais("pt");
-
+        final String CODIGO_PAIS_PORTUGAL = "pt";
+        return listaEmailPais(CODIGO_PAIS_PORTUGAL);
     }
 
     public void imprimirEmails() {
         if (mailBox.isEmpty()) {
             System.out.println("Não há emails");
-        } else {
-            System.out.println("Emails: ");
-            for (String key : mailBox.keySet()) {
-                System.out.println(key);
-            }
+            return;
+        }
+
+        System.out.println("Emails: ");
+        for (String key : mailBox.keySet()) {
+            System.out.println(key);
         }
     }
 
-    public void removeEmailsSpan(String endereco) {
-
-        List<String> palavrasSpan = new ArrayList<>(List.of("GRÁTIS","Atenção","Oi", "Urgente", "Imediato"));
-
-        List<Email> emailsRemover = new ArrayList<>();
+    public void removeEmailsSpam() {
+        List<String> palavrasSpam = new ArrayList<>(DICIONARIO_DE_SPAM);
 
         for (String key : mailBox.keySet()) {
-             for (Email email:mailBox.get(key)){
-                 for (String palavra:palavrasSpan) {
-                     if(email.getAssunto().contains(palavra)){
-                         emailsRemover.add(email);
-                     }
-                 }
-             }
-            mailBox.get(key).removeAll(emailsRemover);
-            emailsRemover = new ArrayList<>();
-        }
+            List<Email> listaEmail = mailBox.get(key);
 
+            List<Email> listaEmailComSpam = listaEmail.stream()
+                    .filter(email -> palavrasSpam.stream().anyMatch(palavra -> email.getAssunto().contains(palavra)))
+                    .collect(Collectors.toList());
 
-    }
-
-    private void removeEmailsDataCorte(LocalDate date, String key) {
-        mailBox.get(key).removeIf(mail -> mail.getDateRecebimento().isBefore(date));
-    }
-    private void removeEmailsDataCorteEndereco(LocalDate date,String endereco, String key) {
-        for (Email email:mailBox.get(key)){
-            if(email.getRemetente().equals(endereco)){
-                mailBox.get(key).removeIf(mail -> mail.getDateRecebimento().isBefore(date));
-
-            }
+            listaEmail.removeAll(listaEmailComSpam);
         }
     }
-    private void filtrarEmailsPorAssunto(Collection<String> words, Collection<String> mailAddresses) {
+
+    private List<Email> removeEmailsDataCorte(LocalDate date, String key) {
+        List<Email> listEmail = mailBox.get(key);
+
+        listEmail.removeIf(mail -> mail.getDateRecebimento().isBefore(date));
+
+        return listEmail;
+    }
+
+    private List<Email> removeEmailsDataCorteEndereco(LocalDate date, String endereco, String key) {
+        List<Email> listEmail = mailBox.get(key);
+
+        mailBox.get(key).removeIf(mail -> mail.getRemetente().equals(endereco) && mail.getDateRecebimento().isBefore(date));
+
+        return listEmail;
+    }
+
+    private List<String> filtrarEmailsPorAssunto(Collection<String> palavras) {
+        List<String> listaEmailComPalavras = new ArrayList<>();
+
         for (String key : mailBox.keySet()) {
-            for (Email email : mailBox.get(key)) {
-                String subject = email.getAssunto().toLowerCase();
-                for (String word : words) {
-                    if (subject.contains(word)) {
-                        if (mailAddresses.contains(email.getRemetente())) {
-                            break;
-                        } else {
-                            mailAddresses.add(email.getRemetente());
-                        }
-                    }
-                }
-            }
+            List<Email> listaEmail = mailBox.get(key);
+
+            listaEmail.stream()
+                    .filter(email -> palavras.stream().anyMatch(palavra -> email.getAssunto().toLowerCase().contains(palavra)))
+                    .forEach(email -> listaEmailComPalavras.add(email.getRemetente()));
         }
+
+        return listaEmailComPalavras;
     }
-    private void verificaCaixaVazia() {
+
+    private boolean verificaCaixaVazia() {
         if (mailBox.isEmpty()) {
-            System.out.println("Caixa de emails vazia");
+            System.out.println("Caixa de e-mails vazia");
+            return false;
         }
+
+        return true;
     }
 
     private boolean validaEmail(String address) {
         return address.isEmpty() || address.isBlank();
     }
 
-    private static boolean validaPais(String pais) {
-        if (pais == null) {
-            System.out.println("É necessário informar um país!");
-            return false;
-        } else
-            return true;
+    private void validaPais(String pais) throws IllegalArgumentException {
+        if (pais == null) throw new IllegalArgumentException("É necessário informar um país!");
     }
-
-
 }
